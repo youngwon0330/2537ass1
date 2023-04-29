@@ -48,9 +48,23 @@ app.use(session({
 }
 ));
 
-app.get('/', (req,res) => {
-    res.send("<h1>Hello World!</h1>");
-});
+app.get("/", (req, res) => {
+    var html;
+    if (!req.session.authenticated) {
+        html = `
+          <button onclick="window.location.href='/signup'">Sign up</button>
+          <br>
+          <button onclick="window.location.href='/login'">Log in</button>
+        `;
+    } else {
+        html = `
+          <h1>hello${req.session.username}</h1>
+          <button onclick="window.location.href='/members'">Go to Members Area</button>
+          <button onclick="window.location.href='/logout'">Log out</button>
+        `;
+    }
+    res.send(html);
+  });
 
 app.get('/nosql-injection', async (req,res) => {
 	var username = req.query.user;
@@ -241,6 +255,10 @@ app.use(express.static(__dirname + "/public"));
 app.get("*", (req,res) => {
 	res.status(404);
 	res.send("Page not found - 404");
+})
+
+app.get("/member", (req,res) => {
+	res.send("hi");
 })
 
 app.listen(port, () => {
