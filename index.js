@@ -176,42 +176,46 @@ app.get("/", (req, res) => {
   app.post("/loggingin", async (req, res) => {
     var email = req.body.email;
     var password = req.body.password;
-  
-    const schema = Joi.string().max(20).required();
-    const validationResult = schema.validate(email);
+
+    const schema = Joi.object({
+      email: Joi.string().email().required(),
+      password: Joi.string().max(20).required(),
+    });
+
+    const validationResult = schema.validate({ email, password });
     if (validationResult.error != null) {
       console.log(validationResult.error);
-      res.send(`Incorrect password. Please <a href="/login">try again</a>.`);
+      var errorMessage = validationResult.error.details[0].message;
+      res.send(
+        `${errorMessage}. Please <a href="/login">try again!</a>.`
+      );
       return;
     }
-  
-    const result = await userCollection
-      .find({ email: email })
-      .project({ name: 1, email: 1, password: 1, _id: 1 })
-      .toArray();
-  
-    console.log(result);
-    if (result.length != 1) {
-      console.log("User not found");
-      res.send(`User not found. Please <a href="/login">try again</a>.`);
+
+    const user = await userCollection.findOne({ email: email });
+
+    if (!user) {
+      res.send(
+        "Invalid email or password. Please <a href='/login'>try again</a>."
+      );
       return;
     }
-    if (await bcrypt.compare(password, result[0].password)) {
-      console.log("Correct Password");
-      req.session.authenticated = true;
-      req.session.email = email;
-      req.session.name = result[0].name;
-      req.session.cookie.maxAge = expireTime;
-  
-      res.redirect("/loggedin");
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      res.send(
+        "Invalid email or password. Please <a href='/login'>try again</a>."
+      );
       return;
     }
-    else {
-      console.log("Incorrect Password");
-      res.send(`Incorrect password. Please <a href="/login">try again</a>.`);
-      return;
-    }
+
+    req.session.authenticated = true;
+    req.session.name = user.name;
+
+    res.redirect("/members");
   });
+
   
   app.get("/loggedin", (req, res) => {
       if (!req.session.authenticated) {
