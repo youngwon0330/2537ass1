@@ -181,7 +181,7 @@ app.get("/", (req, res) => {
     const validationResult = schema.validate(email);
     if (validationResult.error != null) {
       console.log(validationResult.error);
-      res.redirect("/login");
+      res.send(`Incorrect password. Please <a href="/login">try again</a>.`);
       return;
     }
   
@@ -190,8 +190,14 @@ app.get("/", (req, res) => {
       .project({ name: 1, email: 1, password: 1, _id: 1 })
       .toArray();
   
-   
+    console.log(result);
+    if (result.length != 1) {
+      console.log("User not found");
+      res.send(`User not found. Please <a href="/login">try again</a>.`);
+      return;
+    }
     if (await bcrypt.compare(password, result[0].password)) {
+      console.log("Correct Password");
       req.session.authenticated = true;
       req.session.email = email;
       req.session.name = result[0].name;
@@ -199,14 +205,10 @@ app.get("/", (req, res) => {
   
       res.redirect("/loggedin");
       return;
-    } 
-    console.log(result);
-    if (result.length != 1) {
-      res.send(`User not found. <a href="/login">try again</a>.`);
-      return;
     }
     else {
-      res.send(`password not matches.<a href="/login">try again</a>.`);
+      console.log("Incorrect Password");
+      res.send(`Incorrect password. Please <a href="/login">try again</a>.`);
       return;
     }
   });
