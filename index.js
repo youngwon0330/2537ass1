@@ -249,7 +249,7 @@ app.get("/", (req, res) => {
   
   app.get("*", (req, res) => {
     res.status(404);
-    res.send(img + "<h1>Page not found - 404<h1>");
+    res.send("<h1>Page not found - 404<h1>");
   });
   
   app.listen(port, () => {
