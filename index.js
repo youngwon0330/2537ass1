@@ -158,7 +158,7 @@ app.get("/", (req, res) => {
     req.session.authenticated = true;
     req.session.name = name;
   
-    res.redirect("/");
+    res.redirect("/members");
   });
   
   app.get("/login", (req, res) => {
