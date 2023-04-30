@@ -142,7 +142,7 @@ app.get("/", (req, res) => {
       console.log(validationResult.error);
       var errorMessage = validationResult.error.details[0].message;
       res.send(
-        `Huston, we have a problem: ${errorMessage}. Please <a href="/signup">try again!</a>.`
+        `${errorMessage}. Please <a href="/signup">try again!</a>.`
       );
       return;
     }
@@ -163,7 +163,7 @@ app.get("/", (req, res) => {
   
   app.get("/login", (req, res) => {
     var html = `
-        <h1>Log in</h1>
+        <h1>Log in</h1><br>
         <form action='/loggingin' method='post'>
         <input name='email' type='text' placeholder='Email'><br>
         <input name='password' type='password' placeholder='Password'><br>
@@ -190,11 +190,7 @@ app.get("/", (req, res) => {
       .project({ name: 1, email: 1, password: 1, _id: 1 })
       .toArray();
   
-    console.log(result);
-    if (result.length != 1) {
-      res.send(`User not found. <a href="/login">try again</a>.`);
-      return;
-    }
+   
     if (await bcrypt.compare(password, result[0].password)) {
       req.session.authenticated = true;
       req.session.email = email;
@@ -204,8 +200,13 @@ app.get("/", (req, res) => {
       res.redirect("/loggedin");
       return;
     } 
+    console.log(result);
+    if (result.length != 1) {
+      res.send(`User not found. <a href="/login">try again</a>.`);
+      return;
+    }
     else {
-      res.send(`password notmatches. Please <a href="/login">try again</a>.`);
+      res.send(`password not matches.<a href="/login">try again</a>.`);
       return;
     }
   });
@@ -222,9 +223,6 @@ app.get("/", (req, res) => {
         req.session.destroy();
         res.redirect("/");
     });
-  
-      
-
   
   
     app.get("/members", (req, res) => {
